@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GEO PLACES QUIZ – ORP České republiky</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>🗺️ GEO PLACES QUIZ – ORP ČR</h1>
+        </header>
+
+        <!-- Game Panel -->
+        <div class="game-panel">
+            <div class="question-box">
+                <span class="question-label">📍 Najdi ORP:</span>
+                <span class="question-text" id="questionText">Načítání...</span>
+            </div>
+            
+            <div class="score-box">
+                <div class="score-item">
+                    <span class="score-label">Skóre:</span>
+                    <span class="score-value" id="score">0</span>
+                </div>
+                <div class="score-item">
+                    <span class="score-label">Úspěšnost:</span>
+                    <span class="score-value" id="accuracy">0%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Map Container -->
+        <div id="map"></div>
+
+        <!-- Controls -->
+        <div class="controls">
+            <div class="stats">
+                <span id="attempts">Pokusů: 0</span>
+                <span id="correct">Správně: 0</span>
+            </div>
+            <button id="restartBtn" class="btn-restart">🔄 Restart hry</button>
+        </div>
+
+        <!-- Feedback Message -->
+        <div id="feedback" class="feedback hidden"></div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- App JS Modules -->
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>
