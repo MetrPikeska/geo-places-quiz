@@ -15,21 +15,26 @@ class GameController {
       correct: 0,
       currentTarget: null,
       isProcessing: false,
-      selectedRegion: null
+      filterType: null, // 'okres' or 'kraj'
+      filterValue: null
     };
   }
   
   /**
-   * Set region filter
-   * @param {string} okres - Region name or null for all
+   * Set filter by okres or kraj
+   * @param {string} type - 'okres' or 'kraj'
+   * @param {string} value - Name of the region/kraj or null for all
    */
-  async setRegionFilter(okres) {
-    this.state.selectedRegion = okres;
+  async setFilter(type, value) {
+    this.state.filterType = value ? type : null;
+    this.state.filterValue = value;
     
     // Reload map with filtered ORP
-    if (okres) {
-      this.ui.showLoading(`Loading ${okres}...`);
-      const geojson = await this.api.getORPByRegion(okres);
+    if (value) {
+      this.ui.showLoading(`Loading ${value}...`);
+      const geojson = type === 'kraj'
+        ? await this.api.getORPByKraj(value)
+        : await this.api.getORPByRegion(value);
       this.map.renderORP(geojson);
     } else {
       this.ui.showLoading('Loading all ORP...');
@@ -75,8 +80,11 @@ class GameController {
       this.state.isProcessing = false;
       this.map.resetStyles();
       
-      // Load random ORP from database (with optional region filter)
-      const randomORP = await this.api.getRandomORP(this.state.selectedRegion);
+      // Load random ORP from database (with optional filter)
+      const filter = this.state.filterValue
+        ? { [this.state.filterType]: this.state.filterValue }
+        : null;
+      const randomORP = await this.api.getRandomORP(filter);
       this.state.currentTarget = randomORP.properties;
       
       // Display question
@@ -151,7 +159,8 @@ class GameController {
       correct: 0,
       currentTarget: null,
       isProcessing: false,
-      selectedRegion: this.state.selectedRegion // Keep region filter
+      filterType: this.state.filterType,
+      filterValue: this.state.filterValue
     };
     
     this.ui.updateScore(this.state);

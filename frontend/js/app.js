@@ -32,25 +32,49 @@ async function initApp() {
     // Set restart handler
     uiController.setRestartHandler(() => gameController.restart());
     
-    // Load regions and populate selector
+    // Load kraje and okresy and populate selectors
     try {
-      const regionsData = await api.getRegions();
-      const regionSelect = document.getElementById('regionSelect');
+      // Load kraje
+      const krajeData = await api.getKraje();
+      const krajSelect = document.getElementById('krajSelect');
       
-      regionsData.regions.forEach(region => {
+      krajeData.kraje.forEach(kraj => {
         const option = document.createElement('option');
-        option.value = region;
-        option.textContent = region;
-        regionSelect.appendChild(option);
+        option.value = kraj;
+        option.textContent = kraj;
+        krajSelect.appendChild(option);
       });
       
-      // Set region change handler
-      regionSelect.addEventListener('change', async (e) => {
-        const selectedRegion = e.target.value || null;
-        await gameController.setRegionFilter(selectedRegion);
+      // Load okresy
+      const regionsData = await api.getRegions();
+      const okresSelect = document.getElementById('okresSelect');
+      
+      regionsData.regions.forEach(okres => {
+        const option = document.createElement('option');
+        option.value = okres;
+        option.textContent = okres;
+        okresSelect.appendChild(option);
+      });
+      
+      // Set kraj change handler
+      krajSelect.addEventListener('change', async (e) => {
+        const selectedKraj = e.target.value;
+        if (selectedKraj) {
+          okresSelect.value = ''; // Clear okres selection
+        }
+        await gameController.setFilter('kraj', selectedKraj || null);
+      });
+      
+      // Set okres change handler
+      okresSelect.addEventListener('change', async (e) => {
+        const selectedOkres = e.target.value;
+        if (selectedOkres) {
+          krajSelect.value = ''; // Clear kraj selection
+        }
+        await gameController.setFilter('okres', selectedOkres || null);
       });
     } catch (error) {
-      console.warn('Could not load regions:', error);
+      console.warn('Could not load filters:', error);
     }
     
     // Start game

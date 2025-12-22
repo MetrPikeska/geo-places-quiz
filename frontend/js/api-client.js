@@ -26,13 +26,17 @@ class APIClient {
   
   /**
    * Load random ORP for game round
-   * @param {string} okres - Optional region filter
+   * @param {Object} filter - { okres: string } or { kraj: string }
    */
-  async getRandomORP(okres = null) {
+  async getRandomORP(filter = null) {
     try {
-      const url = okres 
-        ? `${this.baseURL}/orp/random?okres=${encodeURIComponent(okres)}`
-        : `${this.baseURL}/orp/random`;
+      let url = `${this.baseURL}/orp/random`;
+      if (filter?.okres) {
+        url += `?okres=${encodeURIComponent(filter.okres)}`;
+      } else if (filter?.kraj) {
+        url += `?kraj=${encodeURIComponent(filter.kraj)}`;
+      }
+      
       const response = await fetch(url);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -45,7 +49,7 @@ class APIClient {
   }
   
   /**
-   * Get list of all regions
+   * Get list of all regions (okresy)
    */
   async getRegions() {
     try {
@@ -61,7 +65,23 @@ class APIClient {
   }
   
   /**
-   * Load ORP filtered by region
+   * Get list of all kraje
+   */
+  async getKraje() {
+    try {
+      const response = await fetch(`${this.baseURL}/orp/kraje/list`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Error loading kraje:', error);
+      throw new Error('Failed to load kraje');
+    }
+  }
+  
+  /**
+   * Load ORP filtered by region (okres)
    * @param {string} okres - Region name
    */
   async getORPByRegion(okres) {
@@ -74,6 +94,23 @@ class APIClient {
     } catch (error) {
       console.error('Error loading ORP by region:', error);
       throw new Error('Failed to load ORP by region');
+    }
+  }
+  
+  /**
+   * Load ORP filtered by kraj
+   * @param {string} kraj - Kraj name
+   */
+  async getORPByKraj(kraj) {
+    try {
+      const response = await fetch(`${this.baseURL}/orp/kraj/${encodeURIComponent(kraj)}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Error loading ORP by kraj:', error);
+      throw new Error('Failed to load ORP by kraj');
     }
   }
   

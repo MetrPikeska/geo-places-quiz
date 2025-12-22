@@ -192,6 +192,26 @@ class ORPService {
   }
   
   /**
+   * Get list of all unique kraje (regions)
+   */
+  async getKraje() {
+    const query = `
+      SELECT DISTINCT kraj
+      FROM "Orp_SLDB"
+      WHERE kraj IS NOT NULL
+      ORDER BY kraj;
+    `;
+    
+    try {
+      const result = await pool.query(query);
+      return result.rows.map(row => row.kraj);
+    } catch (error) {
+      console.error('Error loading kraje:', error);
+      throw error;
+    }
+  }
+  
+  /**
    * Load ORP filtered by region (okres)
    * @param {string} okres - Name of the okres to filter by
    */
@@ -208,6 +228,7 @@ class ORPService {
               'kod', kod,
               'nazev', nazev,
               'okres', okres,
+              'kraj', kraj,
               'pocet_obyvatel', "poc_obyv_SLDB_2021"
             ),
             'geometry', ST_AsGeoJSON(geom_wgs84)::jsonb
@@ -228,40 +249,102 @@ class ORPService {
   }
   
   /**
+   * Load ORP filtered by kraj (region)
+   * @param {string} kraj - Name of the kraj to filter by
+   */
+  async getORPByKraj(kraj) {
+    const query = `
+      SELECT jsonb_build_object(
+        'type', 'FeatureCollection',
+        'features', jsonb_agg(
+          jsonb_build_object(
+            'type', 'Feature',
+            'id', kod,
+            'properties', jsonb_build_object(
+              'id', id,
+              'kod', kod,
+              'nazev', nazev,
+              'okres', okres,
+              'kraj', kraj,
+              'pocet_obyvatel', "poc_obyv_SLDB_2021"
+            ),
+            'geometry', ST_AsGeoJSON(geom_wgs84)::jsonb
+          )
+        )
+      ) AS geojson
+      FROM "Orp_SLDB"
+      WHERE kraj = $1;
+    `;
+    
+    try {
+      const result = await pool.query(query, [kraj]);
+      return result.rows[0].geojson;
+    } catch (error) {
+      console.error('Error loading ORP by kraj:', error);
+      throw error;
+    }
+  }
+  
+  /**
    * Get random ORP from specific region
    * @param {string} okres - Name of the okres (optional)
+   * @param {string} kraj - Name of the kraj (optional)
    */
-  async getRandomORPFromRegion(okres = null) {
-    const query = okres
-      ? `
+  async getRandomORPFromRegion(okres = null, kraj = null) {
+    let query;
+    let params = [];
+    
+    if (okres) {
+      query = `
         SELECT 
           id,
           kod,
           nazev,
           okres,
+          kraj,
           "poc_obyv_SLDB_2021" as pocet_obyvatel,
           ST_AsGeoJSON(geom_wgs84)::jsonb AS geometry
         FROM "Orp_SLDB"
         WHERE okres = $1
         ORDER BY RANDOM()
         LIMIT 1;
-      `
-      : `
+      `;
+      params = [okres];
+    } else if (kraj) {
+      query = `
         SELECT 
           id,
           kod,
           nazev,
           okres,
+          kraj,
+          "poc_obyv_SLDB_2021" as pocet_obyvatel,
+          ST_AsGeoJSON(geom_wgs84)::jsonb AS geometry
+        FROM "Orp_SLDB"
+        WHERE kraj = $1
+        ORDER BY RANDOM()
+        LIMIT 1;
+      `;
+      params = [kraj];
+    } else {
+      query = `
+        SELECT 
+          id,
+          kod,
+          nazev,
+          okres,
+          kraj,
           "poc_obyv_SLDB_2021" as pocet_obyvatel,
           ST_AsGeoJSON(geom_wgs84)::jsonb AS geometry
         FROM "Orp_SLDB"
         ORDER BY RANDOM()
         LIMIT 1;
       `;
+    }
     
     try {
-      const result = okres
-        ? await pool.query(query, [okres])
+      const result = params.length > 0
+        ? await pool.query(query, params)
         : await pool.query(query);
       
       if (result.rows.length === 0) {
@@ -278,6 +361,7 @@ class ORPService {
           kod: row.kod,
           nazev: row.nazev,
           okres: row.okres,
+          kraj: row.kraj,
           pocet_obyvatel: row.pocet_obyvatel
         },
         geometry: row.geometry
