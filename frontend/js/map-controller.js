@@ -9,6 +9,7 @@ class MapController {
     this.orpLayer = null;
     this.containerId = containerId;
     this.onORPClickCallback = null;
+    this.lastClickLatLng = null;
   }
   
   /**
@@ -51,6 +52,9 @@ class MapController {
       onEachFeature: (feature, layer) => {
         // Click on polygon
         layer.on('click', (e) => {
+          // Store click position for precision calculation
+          this.storeClickPosition(e.latlng);
+          
           if (this.onORPClickCallback) {
             this.onORPClickCallback(feature);
           }
@@ -92,20 +96,54 @@ class MapController {
   }
   
   /**
-   * Highlight correct ORP in gold
+   * Highlight correct ORP with green gradient based on click precision
+   * @param {number} orpKod - Code of correct ORP
+   * @param {number} distance - Distance from click to centroid in km (optional)
    */
-  highlightCorrect(orpKod) {
+  highlightCorrect(orpKod, distance = null) {
     this.orpLayer.eachLayer((layer) => {
       if (layer.feature.properties.kod === orpKod) {
+        let fillColor, borderColor;
+        
+        if (distance !== null) {
+          // Green gradient based on precision (0-50km scale)
+          // Close = dark green, far = light green
+          const greenColor = this.getPrecisionGreenColor(distance);
+          fillColor = greenColor;
+          borderColor = this.darkenColor(greenColor, 30);
+        } else {
+          // Default gold color (for showing correct answer without click)
+          fillColor = '#FFD700';
+          borderColor = '#DAA520';
+        }
+        
         layer.setStyle({
-          fillColor: '#FFD700',
+          fillColor: fillColor,
           fillOpacity: 0.7,
-          color: '#DAA520',
+          color: borderColor,
           weight: 3
         });
         layer.options.className = 'highlighted';
       }
     });
+  }
+  
+  /**
+   * Get green color based on click precision
+   * @param {number} distance - Distance in km (0-50km scale)
+   * @returns {string} RGB color string
+   */
+  getPrecisionGreenColor(distance) {
+    // Normalize distance to 0-1 (0 = very close = dark green, 1 = far = light green)
+    // Max distance 50km for precision evaluation
+    const normalized = Math.min(distance / 50, 1);
+    
+    // Dark green (#1a5f1a) to light green (#90ee90)
+    const r = Math.round(26 + (144 - 26) * normalized);   // 26 -> 144
+    const g = Math.round(95 + (238 - 95) * normalized);   // 95 -> 238
+    const b = Math.round(26 + (144 - 26) * normalized);   // 26 -> 144
+    
+    return `rgb(${r}, ${g}, ${b})`;
   }
   
   /**
@@ -230,6 +268,51 @@ class MapController {
         layer.options.className = '';
       });
     }
+  }
+  
+  /**
+   * Calculate precision score based on where user clicked within the correct ORP
+   * @param {number} orpKod - Code of the ORP that was clicked
+   * @returns {Object} { distance: km from centroid, coefficient: score multiplier 0.5-1.0 }
+   */
+  calculatePrecisionScore(orpKod) {
+    let clickedLayer = null;
+    let clickPosition = null;
+    
+    // Find the clicked layer and last click position
+    this.orpLayer.eachLayer((layer) => {
+      if (layer.feature.properties.kod === orpKod) {
+        clickedLayer = layer;
+      }
+    });
+    
+    if (!clickedLayer || !this.lastClickLatLng) {
+      return { distance: 0, coefficient: 1.0 };
+    }
+    
+    // Get centroid of the ORP
+    const centroid = this.getCentroid(clickedLayer);
+    
+    // Calculate distance from click to centroid
+    const distance = this.calculateDistance(
+      this.lastClickLatLng.lat,
+      this.lastClickLatLng.lng,
+      centroid.lat,
+      centroid.lng
+    );
+    
+    // Calculate coefficient (1.0 for perfect center, 0.5 for 50km+ away)
+    // Linear scale: 0km = 1.0, 50km = 0.5
+    const coefficient = Math.max(0.5, 1.0 - (distance / 50) * 0.5);
+    
+    return { distance, coefficient };
+  }
+  
+  /**
+   * Store last click position for precision calculation
+   */
+  storeClickPosition(latlng) {
+    this.lastClickLatLng = latlng;
   }
   
   /**

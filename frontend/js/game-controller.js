@@ -84,14 +84,19 @@ class GameController {
     // Correct answer
     if (clickedKod === targetKod) {
       this.state.correct++;
-      this.state.score++;
       
-      this.map.highlightCorrect(clickedKod);
-      this.ui.showFeedback('✅ Correct!', true, 1000);
+      // Calculate precision coefficient based on click distance from centroid
+      const { distance, coefficient } = this.map.calculatePrecisionScore(clickedKod);
+      this.state.score += coefficient;
+      
+      this.map.highlightCorrect(clickedKod, distance);
+      
+      const precisionPercent = Math.round(coefficient * 100);
+      this.ui.showFeedback(`✅ Správně! Přesnost: ${precisionPercent}% (+${coefficient.toFixed(2)} b)`, true, 1500);
       this.ui.updateScore(this.state);
       
-      // Next round after 1s
-      setTimeout(() => this.nextRound(), 1000);
+      // Next round after 1.5s
+      setTimeout(() => this.nextRound(), 1500);
       
     } else {
       // Wrong answer - gradient based on distance

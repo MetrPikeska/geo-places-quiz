@@ -27,7 +27,7 @@ class UIController {
    * Update score
    */
   updateScore(gameState) {
-    this.elements.score.textContent = gameState.score;
+    this.elements.score.textContent = gameState.score.toFixed(2);
     this.elements.attempts.textContent = `Attempts: ${gameState.attempts}`;
     this.elements.correct.textContent = `Correct: ${gameState.correct}`;
     
