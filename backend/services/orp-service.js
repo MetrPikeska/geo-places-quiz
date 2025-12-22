@@ -33,6 +33,7 @@ class ORPService {
               'kod', kod,
               'nazev', nazev,
               'okres', okres,
+              'kraj', vusc,
               'pocet_obyvatel', "poc_obyv_SLDB_2021"
             ),
             'geometry', ST_AsGeoJSON(geom_wgs84)::jsonb
@@ -196,10 +197,10 @@ class ORPService {
    */
   async getKraje() {
     const query = `
-      SELECT DISTINCT kraj
+      SELECT DISTINCT vusc as kraj
       FROM "Orp_SLDB"
-      WHERE kraj IS NOT NULL
-      ORDER BY kraj;
+      WHERE vusc IS NOT NULL
+      ORDER BY vusc;
     `;
     
     try {
@@ -228,7 +229,7 @@ class ORPService {
               'kod', kod,
               'nazev', nazev,
               'okres', okres,
-              'kraj', kraj,
+              'kraj', vusc,
               'pocet_obyvatel', "poc_obyv_SLDB_2021"
             ),
             'geometry', ST_AsGeoJSON(geom_wgs84)::jsonb
@@ -265,7 +266,7 @@ class ORPService {
               'kod', kod,
               'nazev', nazev,
               'okres', okres,
-              'kraj', kraj,
+              'kraj', vusc,
               'pocet_obyvatel', "poc_obyv_SLDB_2021"
             ),
             'geometry', ST_AsGeoJSON(geom_wgs84)::jsonb
@@ -273,7 +274,7 @@ class ORPService {
         )
       ) AS geojson
       FROM "Orp_SLDB"
-      WHERE kraj = $1;
+      WHERE vusc = $1;
     `;
     
     try {
@@ -301,7 +302,7 @@ class ORPService {
           kod,
           nazev,
           okres,
-          kraj,
+          vusc as kraj,
           "poc_obyv_SLDB_2021" as pocet_obyvatel,
           ST_AsGeoJSON(geom_wgs84)::jsonb AS geometry
         FROM "Orp_SLDB"
@@ -317,11 +318,11 @@ class ORPService {
           kod,
           nazev,
           okres,
-          kraj,
+          vusc as kraj,
           "poc_obyv_SLDB_2021" as pocet_obyvatel,
           ST_AsGeoJSON(geom_wgs84)::jsonb AS geometry
         FROM "Orp_SLDB"
-        WHERE kraj = $1
+        WHERE vusc = $1
         ORDER BY RANDOM()
         LIMIT 1;
       `;
@@ -333,7 +334,7 @@ class ORPService {
           kod,
           nazev,
           okres,
-          kraj,
+          vusc as kraj,
           "poc_obyv_SLDB_2021" as pocet_obyvatel,
           ST_AsGeoJSON(geom_wgs84)::jsonb AS geometry
         FROM "Orp_SLDB"
