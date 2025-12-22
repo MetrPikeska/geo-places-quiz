@@ -22,10 +22,14 @@ router.get('/', async (req, res) => {
 /**
  * GET /api/orp/random
  * Returns random ORP for game
+ * Query param: ?okres=name to filter by region
  */
 router.get('/random', async (req, res) => {
   try {
-    const orp = await orpService.getRandomORP();
+    const okres = req.query.okres || null;
+    const orp = okres 
+      ? await orpService.getRandomORPFromRegion(okres)
+      : await orpService.getRandomORP();
     res.json(orp);
   } catch (error) {
     console.error('Error loading random ORP:', error);
@@ -76,6 +80,41 @@ router.get('/:kod', async (req, res) => {
     console.error('Error loading ORP:', error);
     res.status(500).json({ 
       error: 'Error loading ORP',
+      message: error.message 
+    });
+  }
+});
+
+/**
+ * GET /api/orp/regions/list
+ * Returns list of all unique regions (okresy)
+ */
+router.get('/regions/list', async (req, res) => {
+  try {
+    const regions = await orpService.getRegions();
+    res.json({ regions });
+  } catch (error) {
+    console.error('Error loading regions:', error);
+    res.status(500).json({ 
+      error: 'Error loading regions',
+      message: error.message 
+    });
+  }
+});
+
+/**
+ * GET /api/orp/region/:okres
+ * Returns ORP filtered by region
+ */
+router.get('/region/:okres', async (req, res) => {
+  try {
+    const okres = decodeURIComponent(req.params.okres);
+    const geojson = await orpService.getORPByRegion(okres);
+    res.json(geojson);
+  } catch (error) {
+    console.error('Error loading ORP by region:', error);
+    res.status(500).json({ 
+      error: 'Error loading ORP by region',
       message: error.message 
     });
   }

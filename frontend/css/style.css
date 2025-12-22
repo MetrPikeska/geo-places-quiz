@@ -55,6 +55,8 @@ body {
     background-color: white;
     border-bottom: 1px solid var(--border-color);
     box-shadow: var(--shadow);
+    flex-wrap: wrap;
+    gap: 1rem;
 }
 
 .question-box {
@@ -73,6 +75,37 @@ body {
     font-size: 1.25rem;
     font-weight: 700;
     color: var(--error-color);
+}
+
+.region-filter {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.region-filter label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.region-select {
+    padding: 0.5rem 1rem;
+    border: 2px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 0.95rem;
+    background-color: white;
+    cursor: pointer;
+    transition: border-color 0.3s;
+}
+
+.region-select:hover {
+    border-color: var(--primary-color);
+}
+
+.region-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
 }
 
 .score-box {

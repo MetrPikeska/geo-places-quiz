@@ -170,6 +170,123 @@ class ORPService {
       throw error;
     }
   }
+  
+  /**
+   * Get list of all unique regions (okresy)
+   */
+  async getRegions() {
+    const query = `
+      SELECT DISTINCT okres
+      FROM "Orp_SLDB"
+      WHERE okres IS NOT NULL
+      ORDER BY okres;
+    `;
+    
+    try {
+      const result = await pool.query(query);
+      return result.rows.map(row => row.okres);
+    } catch (error) {
+      console.error('Error loading regions:', error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Load ORP filtered by region (okres)
+   * @param {string} okres - Name of the okres to filter by
+   */
+  async getORPByRegion(okres) {
+    const query = `
+      SELECT jsonb_build_object(
+        'type', 'FeatureCollection',
+        'features', jsonb_agg(
+          jsonb_build_object(
+            'type', 'Feature',
+            'id', kod,
+            'properties', jsonb_build_object(
+              'id', id,
+              'kod', kod,
+              'nazev', nazev,
+              'okres', okres,
+              'pocet_obyvatel', "poc_obyv_SLDB_2021"
+            ),
+            'geometry', ST_AsGeoJSON(geom_wgs84)::jsonb
+          )
+        )
+      ) AS geojson
+      FROM "Orp_SLDB"
+      WHERE okres = $1;
+    `;
+    
+    try {
+      const result = await pool.query(query, [okres]);
+      return result.rows[0].geojson;
+    } catch (error) {
+      console.error('Error loading ORP by region:', error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Get random ORP from specific region
+   * @param {string} okres - Name of the okres (optional)
+   */
+  async getRandomORPFromRegion(okres = null) {
+    const query = okres
+      ? `
+        SELECT 
+          id,
+          kod,
+          nazev,
+          okres,
+          "poc_obyv_SLDB_2021" as pocet_obyvatel,
+          ST_AsGeoJSON(geom_wgs84)::jsonb AS geometry
+        FROM "Orp_SLDB"
+        WHERE okres = $1
+        ORDER BY RANDOM()
+        LIMIT 1;
+      `
+      : `
+        SELECT 
+          id,
+          kod,
+          nazev,
+          okres,
+          "poc_obyv_SLDB_2021" as pocet_obyvatel,
+          ST_AsGeoJSON(geom_wgs84)::jsonb AS geometry
+        FROM "Orp_SLDB"
+        ORDER BY RANDOM()
+        LIMIT 1;
+      `;
+    
+    try {
+      const result = okres
+        ? await pool.query(query, [okres])
+        : await pool.query(query);
+      
+      if (result.rows.length === 0) {
+        throw new Error('No ORP in database');
+      }
+      
+      const row = result.rows[0];
+      
+      return {
+        type: 'Feature',
+        id: row.kod,
+        properties: {
+          id: row.id,
+          kod: row.kod,
+          nazev: row.nazev,
+          okres: row.okres,
+          pocet_obyvatel: row.pocet_obyvatel
+        },
+        geometry: row.geometry
+      };
+    } catch (error) {
+      console.error('Error loading random ORP from region:', error);
+      throw error;
+    }
+  }
 }
 
 module.exports = new ORPService();

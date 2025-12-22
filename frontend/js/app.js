@@ -32,6 +32,27 @@ async function initApp() {
     // Set restart handler
     uiController.setRestartHandler(() => gameController.restart());
     
+    // Load regions and populate selector
+    try {
+      const regionsData = await api.getRegions();
+      const regionSelect = document.getElementById('regionSelect');
+      
+      regionsData.regions.forEach(region => {
+        const option = document.createElement('option');
+        option.value = region;
+        option.textContent = region;
+        regionSelect.appendChild(option);
+      });
+      
+      // Set region change handler
+      regionSelect.addEventListener('change', async (e) => {
+        const selectedRegion = e.target.value || null;
+        await gameController.setRegionFilter(selectedRegion);
+      });
+    } catch (error) {
+      console.warn('Could not load regions:', error);
+    }
+    
     // Start game
     await gameController.init();
     

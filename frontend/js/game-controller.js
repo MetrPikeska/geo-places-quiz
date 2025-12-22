@@ -14,8 +14,31 @@ class GameController {
       attempts: 0,
       correct: 0,
       currentTarget: null,
-      isProcessing: false
+      isProcessing: false,
+      selectedRegion: null
     };
+  }
+  
+  /**
+   * Set region filter
+   * @param {string} okres - Region name or null for all
+   */
+  async setRegionFilter(okres) {
+    this.state.selectedRegion = okres;
+    
+    // Reload map with filtered ORP
+    if (okres) {
+      this.ui.showLoading(`Loading ${okres}...`);
+      const geojson = await this.api.getORPByRegion(okres);
+      this.map.renderORP(geojson);
+    } else {
+      this.ui.showLoading('Loading all ORP...');
+      const geojson = await this.api.getAllORP();
+      this.map.renderORP(geojson);
+    }
+    
+    // Start new round
+    await this.nextRound();
   }
   
   /**
@@ -52,8 +75,8 @@ class GameController {
       this.state.isProcessing = false;
       this.map.resetStyles();
       
-      // Load random ORP from database
-      const randomORP = await this.api.getRandomORP();
+      // Load random ORP from database (with optional region filter)
+      const randomORP = await this.api.getRandomORP(this.state.selectedRegion);
       this.state.currentTarget = randomORP.properties;
       
       // Display question
@@ -127,7 +150,8 @@ class GameController {
       attempts: 0,
       correct: 0,
       currentTarget: null,
-      isProcessing: false
+      isProcessing: false,
+      selectedRegion: this.state.selectedRegion // Keep region filter
     };
     
     this.ui.updateScore(this.state);

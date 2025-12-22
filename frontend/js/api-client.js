@@ -26,10 +26,14 @@ class APIClient {
   
   /**
    * Load random ORP for game round
+   * @param {string} okres - Optional region filter
    */
-  async getRandomORP() {
+  async getRandomORP(okres = null) {
     try {
-      const response = await fetch(`${this.baseURL}/orp/random`);
+      const url = okres 
+        ? `${this.baseURL}/orp/random?okres=${encodeURIComponent(okres)}`
+        : `${this.baseURL}/orp/random`;
+      const response = await fetch(url);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -37,6 +41,39 @@ class APIClient {
     } catch (error) {
       console.error('Error loading random ORP:', error);
       throw new Error('Failed to load random ORP');
+    }
+  }
+  
+  /**
+   * Get list of all regions
+   */
+  async getRegions() {
+    try {
+      const response = await fetch(`${this.baseURL}/orp/regions/list`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Error loading regions:', error);
+      throw new Error('Failed to load regions');
+    }
+  }
+  
+  /**
+   * Load ORP filtered by region
+   * @param {string} okres - Region name
+   */
+  async getORPByRegion(okres) {
+    try {
+      const response = await fetch(`${this.baseURL}/orp/region/${encodeURIComponent(okres)}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Error loading ORP by region:', error);
+      throw new Error('Failed to load ORP by region');
     }
   }
   
