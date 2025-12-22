@@ -1,7 +1,7 @@
 {
   "name": "geo-places-quiz-backend",
   "version": "1.0.0",
-  "description": "Backend API pro GIS kvíz ORP České republiky",
+  "description": "Backend API for GIS quiz of Czech ORP",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

@@ -2,22 +2,22 @@ const pool = require('../config/database');
 
 class ORPService {
   constructor() {
-    // Cache pro všechny ORP - načte se jednou a drží se v paměti
+    // Cache for all ORP - loaded once and kept in memory
     this.orpCache = null;
     this.cacheTimestamp = null;
-    this.CACHE_DURATION = 1000 * 60 * 60; // 1 hodina
+    this.CACHE_DURATION = 1000 * 60 * 60; // 1 hour
   }
   
   /**
-   * Načte všechny ORP jako GeoJSON
-   * Používá předpočítaný sloupec geom_wgs84 místo transformace
-   * Cachuje výsledek pro rychlejší opakované požadavky
+   * Load all ORP as GeoJSON
+   * Uses precomputed geom_wgs84 column instead of transformation
+   * Caches result for faster repeated requests
    */
   async getAllORP() {
-    // Zkontroluj cache
+    // Check cache
     const now = Date.now();
     if (this.orpCache && this.cacheTimestamp && (now - this.cacheTimestamp < this.CACHE_DURATION)) {
-      console.log('✅ Vráceno z cache');
+      console.log('✅ Returned from cache');
       return this.orpCache;
     }
     
@@ -47,22 +47,22 @@ class ORPService {
       const result = await pool.query(query);
       const data = result.rows[0].geojson;
       
-      // Ulož do cache
+      // Save to cache
       this.orpCache = data;
       this.cacheTimestamp = Date.now();
       
       const duration = Date.now() - startTime;
-      console.log(`📊 ORP načteno z DB za ${duration}ms`);
+      console.log(`📊 ORP loaded from DB in ${duration}ms`);
       
       return data;
     } catch (error) {
-      console.error('Chyba při načítání všech ORP:', error);
+      console.error('Error loading all ORP:', error);
       throw error;
     }
   }
   
   /**
-   * Načte náhodnou ORP pro hru
+   * Load random ORP for game
    */
   async getRandomORP() {
     const query = `
@@ -82,7 +82,7 @@ class ORPService {
       const result = await pool.query(query);
       
       if (result.rows.length === 0) {
-        throw new Error('Žádné ORP v databázi');
+        throw new Error('No ORP in database');
       }
       
       const row = result.rows[0];
@@ -100,13 +100,13 @@ class ORPService {
         geometry: row.geometry
       };
     } catch (error) {
-      console.error('Chyba při načítání náhodné ORP:', error);
+      console.error('Error loading random ORP:', error);
       throw error;
     }
   }
   
   /**
-   * Načte ORP podle kódu
+   * Load ORP by code
    */
   async getORPByKod(kod) {
     const query = `
@@ -143,13 +143,13 @@ class ORPService {
         geometry: row.geometry
       };
     } catch (error) {
-      console.error('Chyba při načítání ORP podle kódu:', error);
+      console.error('Error loading ORP by code:', error);
       throw error;
     }
   }
   
   /**
-   * Získá statistiky databáze
+   * Get database statistics
    */
   async getStats() {
     const query = `
@@ -166,7 +166,7 @@ class ORPService {
       const result = await pool.query(query);
       return result.rows[0];
     } catch (error) {
-      console.error('Chyba při načítání statistik:', error);
+      console.error('Error loading statistics:', error);
       throw error;
     }
   }

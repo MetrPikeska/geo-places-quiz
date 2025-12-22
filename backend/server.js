@@ -11,7 +11,7 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// Komprese odpovědí (GZIP)
+// Response compression (GZIP)
 app.use(compression({
   filter: (req, res) => {
     if (req.headers['x-no-compression']) {
@@ -19,7 +19,7 @@ app.use(compression({
     }
     return compression.filter(req, res);
   },
-  level: 6 // Kompresní úroveň (0-9)
+  level: 6 // Compression level (0-9)
 }));
 
 // Logging middleware
@@ -35,27 +35,27 @@ app.use('/api/orp', orpRoutes);
 app.get('/api/health', (req, res) => {
   res.json({ 
     status: 'OK', 
-    message: 'Backend běží',
+    message: 'Backend is running',
     timestamp: new Date().toISOString()
   });
 });
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error('Chyba:', err);
+  console.error('Error:', err);
   res.status(500).json({ 
-    error: 'Interní chyba serveru',
+    error: 'Internal server error',
     message: process.env.NODE_ENV === 'development' ? err.message : undefined
   });
 });
 
 // 404 handler
 app.use((req, res) => {
-  res.status(404).json({ error: 'Endpoint nenalezen' });
+  res.status(404).json({ error: 'Endpoint not found' });
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 Server běží na http://localhost:${PORT}`);
-  console.log(`📊 Databáze: ${process.env.DB_NAME}@${process.env.DB_HOST}`);
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`📊 Database: ${process.env.DB_NAME}@${process.env.DB_HOST}`);
   console.log(`🗺️  API endpoint: http://localhost:${PORT}/api/orp`);
 });

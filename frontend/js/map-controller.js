@@ -180,34 +180,34 @@ class MapController {
   }
   
   /**
-   * Vrátí barvu podle vzdálenosti (gradient červená -> žlutá -> zelená)
+   * Return color based on distance (gradient red -> yellow -> green)
    */
   getDistanceColor(distance) {
-    // Normalizuj vzdálenost na škálu 0-1 (0 = blízko = zelená, 1 = daleko = červená)
-    // Max vzdálenost cca 300km (přes celou ČR)
+    // Normalize distance to 0-1 scale (0 = close = green, 1 = far = red)
+    // Max distance approx 300km (across entire Czech Republic)
     const normalized = Math.min(distance / 300, 1);
     
     let r, g, b;
     
     if (normalized < 0.5) {
-      // Zelená -> Žlutá (0-150km)
+      // Green -> Yellow (0-150km)
       const t = normalized * 2;
-      r = Math.round(46 + (255 - 46) * t);   // 46 (zelená) -> 255 (žlutá)
-      g = Math.round(204 + (241 - 204) * t); // 204 (zelená) -> 241 (žlutá)
-      b = Math.round(113 + (118 - 113) * t); // 113 (zelená) -> 118 (žlutá)
+      r = Math.round(46 + (255 - 46) * t);   // 46 (green) -> 255 (yellow)
+      g = Math.round(204 + (255 - 204) * t); // 204 (green) -> 241 (yellow)
+      b = Math.round(113 + (118 - 113) * t); // 113 (green) -> 118 (yellow)
     } else {
-      // Žlutá -> Červená (150-300km)
+      // Yellow -> Red (150-300km)
       const t = (normalized - 0.5) * 2;
-      r = Math.round(255);                    // 255 zůstává
-      g = Math.round(241 + (107 - 241) * t);  // 241 (žlutá) -> 107 (červená)
-      b = Math.round(118 + (60 - 118) * t);   // 118 (žlutá) -> 60 (červená)
+      r = Math.round(255);                    // 255 stays
+      g = Math.round(241 + (107 - 241) * t);  // 241 (yellow) -> 107 (red)
+      b = Math.round(118 + (60 - 118) * t);   // 118 (yellow) -> 60 (red)
     }
     
     return `rgb(${r}, ${g}, ${b})`;
   }
   
   /**
-   * Ztmaví barvu o procento
+   * Darken color by percentage
    */
   darkenColor(rgb, percent) {
     const match = rgb.match(/\d+/g);

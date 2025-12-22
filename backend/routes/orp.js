@@ -4,16 +4,16 @@ const orpService = require('../services/orp-service');
 
 /**
  * GET /api/orp
- * Vrátí všechny ORP jako GeoJSON FeatureCollection
+ * Returns all ORP as GeoJSON FeatureCollection
  */
 router.get('/', async (req, res) => {
   try {
     const geojson = await orpService.getAllORP();
     res.json(geojson);
   } catch (error) {
-    console.error('Chyba při načítání ORP:', error);
+    console.error('Error loading ORP:', error);
     res.status(500).json({ 
-      error: 'Chyba při načítání ORP',
+      error: 'Error loading ORP',
       message: error.message 
     });
   }
@@ -21,16 +21,16 @@ router.get('/', async (req, res) => {
 
 /**
  * GET /api/orp/random
- * Vrátí náhodnou ORP pro hru
+ * Returns random ORP for game
  */
 router.get('/random', async (req, res) => {
   try {
     const orp = await orpService.getRandomORP();
     res.json(orp);
   } catch (error) {
-    console.error('Chyba při načítání náhodné ORP:', error);
+    console.error('Error loading random ORP:', error);
     res.status(500).json({ 
-      error: 'Chyba při načítání náhodné ORP',
+      error: 'Error loading random ORP',
       message: error.message 
     });
   }
@@ -38,16 +38,16 @@ router.get('/random', async (req, res) => {
 
 /**
  * GET /api/orp/stats
- * Vrátí statistiky databáze
+ * Returns database statistics
  */
 router.get('/stats', async (req, res) => {
   try {
     const stats = await orpService.getStats();
     res.json(stats);
   } catch (error) {
-    console.error('Chyba při načítání statistik:', error);
+    console.error('Error loading statistics:', error);
     res.status(500).json({ 
-      error: 'Chyba při načítání statistik',
+      error: 'Error loading statistics',
       message: error.message 
     });
   }
@@ -55,27 +55,27 @@ router.get('/stats', async (req, res) => {
 
 /**
  * GET /api/orp/:kod
- * Vrátí konkrétní ORP podle kódu
+ * Returns specific ORP by code
  */
 router.get('/:kod', async (req, res) => {
   try {
     const kod = parseInt(req.params.kod);
     
     if (isNaN(kod)) {
-      return res.status(400).json({ error: 'Neplatný kód ORP' });
+      return res.status(400).json({ error: 'Invalid ORP code' });
     }
     
     const orp = await orpService.getORPByKod(kod);
     
     if (!orp) {
-      return res.status(404).json({ error: 'ORP nenalezena' });
+      return res.status(404).json({ error: 'ORP not found' });
     }
     
     res.json(orp);
   } catch (error) {
-    console.error('Chyba při načítání ORP:', error);
+    console.error('Error loading ORP:', error);
     res.status(500).json({ 
-      error: 'Chyba při načítání ORP',
+      error: 'Error loading ORP',
       message: error.message 
     });
   }

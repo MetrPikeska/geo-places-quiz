@@ -9,11 +9,11 @@ const pool = new Pool({
 });
 
 pool.on('connect', () => {
-  console.log('✅ Připojeno k PostgreSQL/PostGIS databázi');
+  console.log('✅ Connected to PostgreSQL/PostGIS database');
 });
 
 pool.on('error', (err) => {
-  console.error('❌ Neočekávaná chyba PostgreSQL:', err);
+  console.error('❌ Unexpected PostgreSQL error:', err);
   process.exit(-1);
 });
 

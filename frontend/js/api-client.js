@@ -1,6 +1,6 @@
 /**
- * API Client pro komunikaci s backendem
- * Zpracovává HTTP požadavky na PostGIS databázi
+ * API Client for backend communication
+ * Handles HTTP requests to PostGIS database
  */
 
 class APIClient {
@@ -9,7 +9,7 @@ class APIClient {
   }
   
   /**
-   * Načte všechny ORP jako GeoJSON
+   * Load all ORP as GeoJSON
    */
   async getAllORP() {
     try {
@@ -19,13 +19,13 @@ class APIClient {
       }
       return await response.json();
     } catch (error) {
-      console.error('Chyba při načítání ORP:', error);
-      throw new Error('Nepodařilo se načíst data ORP z databáze');
+      console.error('Error loading ORP:', error);
+      throw new Error('Failed to load ORP data from database');
     }
   }
   
   /**
-   * Načte náhodnou ORP pro herní kolo
+   * Load random ORP for game round
    */
   async getRandomORP() {
     try {
@@ -35,13 +35,13 @@ class APIClient {
       }
       return await response.json();
     } catch (error) {
-      console.error('Chyba při načítání náhodné ORP:', error);
-      throw new Error('Nepodařilo se načíst náhodnou ORP');
+      console.error('Error loading random ORP:', error);
+      throw new Error('Failed to load random ORP');
     }
   }
   
   /**
-   * Načte statistiky databáze
+   * Load database statistics
    */
   async getStats() {
     try {
@@ -51,13 +51,13 @@ class APIClient {
       }
       return await response.json();
     } catch (error) {
-      console.error('Chyba při načítání statistik:', error);
+      console.error('Error loading statistics:', error);
       throw error;
     }
   }
   
   /**
-   * Health check backendu
+   * Backend health check
    */
   async checkHealth() {
     try {
@@ -67,8 +67,8 @@ class APIClient {
       }
       return await response.json();
     } catch (error) {
-      console.error('Backend není dostupný:', error);
-      throw new Error('Backend server neběží');
+      console.error('Backend not available:', error);
+      throw new Error('Backend server is not running');
     }
   }
 }

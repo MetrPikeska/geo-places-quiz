@@ -1,6 +1,6 @@
 /**
- * Game Controller - Herní logika
- * Řídí průběh hry, skórování a herní stav
+ * Game Controller - Game logic
+ * Manages game flow, scoring and game state
  */
 
 class GameController {
@@ -19,58 +19,58 @@ class GameController {
   }
   
   /**
-   * Inicializuje hru
+   * Initialize game
    */
   async init() {
     try {
-      this.ui.showLoading('Načítám data z databáze...');
+      this.ui.showLoading('Loading data from database...');
       
-      // Načti všechny ORP
+      // Load all ORP
       const geojson = await this.api.getAllORP();
       
-      // Vykresli na mapu
+      // Render on map
       this.map.renderORP(geojson);
       
-      // Nastav handler pro kliknutí
+      // Set click handler
       this.map.setORPClickHandler((feature) => this.handleAnswer(feature));
       
-      // Spusť první kolo
+      // Start first round
       await this.nextRound();
       
-      console.log('✅ Hra inicializována');
+      console.log('✅ Game initialized');
     } catch (error) {
-      console.error('Chyba při inicializaci hry:', error);
-      this.ui.showError('Nepodařilo se načíst data. Ujisti se, že backend běží.');
+      console.error('Error initializing game:', error);
+      this.ui.showError('Failed to load data. Make sure backend is running.');
     }
   }
   
   /**
-   * Načte další kolo
+   * Load next round
    */
   async nextRound() {
     try {
       this.state.isProcessing = false;
       this.map.resetStyles();
       
-      // Načti náhodnou ORP z databáze
+      // Load random ORP from database
       const randomORP = await this.api.getRandomORP();
       this.state.currentTarget = randomORP.properties;
       
-      // Zobraz otázku
+      // Display question
       this.ui.showQuestion(randomORP.properties.nazev);
       
-      console.log(`🎯 Cílová ORP: ${randomORP.properties.nazev}`);
+      console.log(`🎯 Target ORP: ${randomORP.properties.nazev}`);
     } catch (error) {
-      console.error('Chyba při načítání dalšího kola:', error);
-      this.ui.showError('Nepodařilo se načíst další ORP');
+      console.error('Error loading next round:', error);
+      this.ui.showError('Failed to load next ORP');
     }
   }
   
   /**
-   * Zpracuje odpověď hráče
+   * Handle player's answer
    */
   async handleAnswer(clickedFeature) {
-    // Ignore clicks během zpracování
+    // Ignore clicks during processing
     if (this.state.isProcessing) {
       return;
     }
@@ -81,20 +81,20 @@ class GameController {
     const clickedKod = clickedFeature.properties.kod;
     const targetKod = this.state.currentTarget.kod;
     
-    // Správná odpověď
+    // Correct answer
     if (clickedKod === targetKod) {
       this.state.correct++;
       this.state.score++;
       
       this.map.highlightCorrect(clickedKod);
-      this.ui.showFeedback('✅ Správně!', true, 1000);
+      this.ui.showFeedback('✅ Correct!', true, 1000);
       this.ui.updateScore(this.state);
       
-      // Další kolo po 1s
+      // Next round after 1s
       setTimeout(() => this.nextRound(), 1000);
       
     } else {
-      // Špatná odpověď - gradient podle vzdálenosti
+      // Wrong answer - gradient based on distance
       this.map.highlightWrong(clickedKod, targetKod);
       this.map.highlightCorrect(targetKod);
       
@@ -102,19 +102,19 @@ class GameController {
       const correctName = this.state.currentTarget.nazev;
       
       this.ui.showFeedback(
-        `❌ Špatně! Klikl jsi na: ${wrongName}\n✅ Správně bylo: ${correctName}`, 
+        `❌ Wrong! You clicked: ${wrongName}\n✅ Correct was: ${correctName}`, 
         false, 
         2500
       );
       this.ui.updateScore(this.state);
       
-      // Další kolo po 2.5s
+      // Next round after 2.5s
       setTimeout(() => this.nextRound(), 2500);
     }
   }
   
   /**
-   * Restart hry
+   * Restart game
    */
   restart() {
     this.state = {
@@ -129,7 +129,7 @@ class GameController {
     this.map.resetStyles();
     this.nextRound();
     
-    console.log('🔄 Hra restartována');
+    console.log('🔄 Game restarted');
   }
 }
 

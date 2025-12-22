@@ -1,6 +1,6 @@
 /**
- * GEO PLACES QUIZ - Hlavní aplikační soubor
- * Inicializuje všechny moduly a spouští hru
+ * GEO PLACES QUIZ - Main application file
+ * Initializes all modules and starts the game
  */
 
 import APIClient from './api-client.js';
@@ -9,46 +9,46 @@ import UIController from './ui-controller.js';
 import GameController from './game-controller.js';
 
 /**
- * Inicializace aplikace
+ * Initialize application
  */
 async function initApp() {
-  console.log('🚀 Spouštím GEO PLACES QUIZ');
+  console.log('🚀 Starting GEO PLACES QUIZ');
   
   try {
-    // Vytvoř instance controllerů
+    // Create controller instances
     const api = new APIClient('http://localhost:3000/api');
     const mapController = new MapController('map');
     const uiController = new UIController();
     const gameController = new GameController(api, mapController, uiController);
     
-    // Zkontroluj dostupnost backendu
-    uiController.showLoading('Připojuji se k databázi...');
+    // Check backend availability
+    uiController.showLoading('Connecting to database...');
     await api.checkHealth();
-    console.log('✅ Backend je dostupný');
+    console.log('✅ Backend is available');
     
-    // Inicializuj mapu
+    // Initialize map
     mapController.init();
     
-    // Nastav restart handler
+    // Set restart handler
     uiController.setRestartHandler(() => gameController.restart());
     
-    // Spusť hru
+    // Start game
     await gameController.init();
     
-    console.log('✅ Aplikace připravena');
+    console.log('✅ Application ready');
     
   } catch (error) {
-    console.error('❌ Chyba při inicializaci aplikace:', error);
+    console.error('❌ Error initializing application:', error);
     
     const errorMessage = error.message.includes('Backend')
-      ? 'Backend server neběží.\n\nSpusť backend příkazem:\ncd backend\nnpm install\nnpm run dev'
-      : `Chyba při inicializaci: ${error.message}`;
+      ? 'Backend server is not running.\n\nStart backend with:\ncd backend\nnpm install\nnpm run dev'
+      : `Initialization error: ${error.message}`;
     
     alert(`❌ ${errorMessage}`);
   }
 }
 
-// Spusť aplikaci po načtení DOM
+// Start application after DOM loads
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initApp);
 } else {
