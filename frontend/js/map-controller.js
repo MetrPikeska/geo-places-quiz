@@ -1,6 +1,6 @@
 /**
- * Map Controller - Správa Leaflet mapy
- * Vykresluje ORP polygony a zpracovává interakce
+ * Map Controller - Leaflet map management
+ * Renders ORP polygons and handles interactions
  */
 
 class MapController {
@@ -12,10 +12,10 @@ class MapController {
   }
   
   /**
-   * Inicializuje Leaflet mapu
+   * Initialize Leaflet map
    */
   init() {
-    // Vytvoř mapu se středem na ČR
+    // Create map centered on Czech Republic
     this.map = L.map(this.containerId, {
       center: [49.8, 15.5],
       zoom: 8,
@@ -24,42 +24,42 @@ class MapController {
       zoomControl: true
     });
     
-    // Bez podkladové mapy - jen polygony
+    // No basemap - only polygons
     
-    // Přidej měřítko
+    // Add scale control
     L.control.scale({
       metric: true,
       imperial: false,
       position: 'bottomright'
     }).addTo(this.map);
     
-    console.log('✅ Mapa inicializována');
+    console.log('✅ Map initialized');
   }
   
   /**
-   * Vykreslí ORP polygony na mapu
+   * Render ORP polygons on the map
    */
   renderORP(geojson) {
-    // Odstraň předchozí vrstvu
+    // Remove previous layer
     if (this.orpLayer) {
       this.map.removeLayer(this.orpLayer);
     }
     
-    // Vytvoř GeoJSON vrstvu
+    // Create GeoJSON layer
     this.orpLayer = L.geoJSON(geojson, {
       style: this.getDefaultStyle(),
       onEachFeature: (feature, layer) => {
-        // Kliknutí na polygon
+        // Click on polygon
         layer.on('click', (e) => {
           if (this.onORPClickCallback) {
             this.onORPClickCallback(feature);
           }
         });
         
-        // Hover efekt
+        // Hover effect
         layer.on('mouseover', () => {
           layer.setStyle({
-            fillOpacity: 0.4,
+            fillOpacity: 0.5,
             weight: 2.5
           });
         });
@@ -72,35 +72,35 @@ class MapController {
       }
     }).addTo(this.map);
     
-    // Nastav bounds mapy podle ORP
+    // Fit map bounds to ORP layer
     this.map.fitBounds(this.orpLayer.getBounds());
     
-    console.log(`✅ Vykresleno ${geojson.features.length} ORP`);
+    console.log(`✅ Rendered ${geojson.features.length} ORP`);
   }
   
   /**
-   * Výchozí styl polygonů
+   * Default polygon style
    */
   getDefaultStyle() {
     return {
-      fillColor: '#3498db',
-      fillOpacity: 0.2,
-      color: '#2c3e50',
+      fillColor: '#d3d3d3',
+      fillOpacity: 0.3,
+      color: '#999999',
       weight: 1.5,
-      opacity: 0.6
+      opacity: 0.7
     };
   }
   
   /**
-   * Zvýrazní správnou ORP zeleně
+   * Highlight correct ORP in gold
    */
   highlightCorrect(orpKod) {
     this.orpLayer.eachLayer((layer) => {
       if (layer.feature.properties.kod === orpKod) {
         layer.setStyle({
-          fillColor: '#2ecc71',
-          fillOpacity: 0.6,
-          color: '#27ae60',
+          fillColor: '#FFD700',
+          fillOpacity: 0.7,
+          color: '#DAA520',
           weight: 3
         });
         layer.options.className = 'highlighted';
@@ -109,15 +109,15 @@ class MapController {
   }
   
   /**
-   * Zvýrazní špatnou ORP podle vzdálenosti od správné (gradient)
-   * @param {number} orpKod - Kód kliknuté ORP
-   * @param {number} correctKod - Kód správné ORP
+   * Highlight wrong ORP based on distance from correct answer (gradient)
+   * @param {number} orpKod - Code of clicked ORP
+   * @param {number} correctKod - Code of correct ORP
    */
   highlightWrong(orpKod, correctKod) {
     let clickedCentroid = null;
     let correctCentroid = null;
     
-    // Najdi centroidy obou ORP
+    // Find centroids of both ORPs
     this.orpLayer.eachLayer((layer) => {
       if (layer.feature.properties.kod === orpKod) {
         clickedCentroid = this.getCentroid(layer);
@@ -129,16 +129,16 @@ class MapController {
     
     if (!clickedCentroid || !correctCentroid) return;
     
-    // Vypočti vzdálenost v km
+    // Calculate distance in km
     const distance = this.calculateDistance(
       clickedCentroid.lat, clickedCentroid.lng,
       correctCentroid.lat, correctCentroid.lng
     );
     
-    // Získej barvu podle vzdálenosti (0-300km škála)
+    // Get color based on distance (0-300km scale)
     const color = this.getDistanceColor(distance);
     
-    // Zvýrazni kliknutou ORP gradientovou barvou
+    // Highlight clicked ORP with gradient color
     this.orpLayer.eachLayer((layer) => {
       if (layer.feature.properties.kod === orpKod) {
         layer.setStyle({
@@ -153,7 +153,7 @@ class MapController {
   }
   
   /**
-   * Vypočítá centroid polygonu
+   * Calculate polygon centroid
    */
   getCentroid(layer) {
     const bounds = layer.getBounds();
@@ -161,10 +161,10 @@ class MapController {
   }
   
   /**
-   * Vypočítá vzdálenost mezi dvěma body (Haversine formula)
+   * Calculate distance between two points (Haversine formula)
    */
   calculateDistance(lat1, lon1, lat2, lon2) {
-    const R = 6371; // Poloměr Země v km
+    const R = 6371; // Earth radius in km
     const dLat = this.toRad(lat2 - lat1);
     const dLon = this.toRad(lon2 - lon1);
     const a = 
@@ -221,7 +221,7 @@ class MapController {
   }
   
   /**
-   * Resetuj všechny styly
+   * Reset all polygon styles
    */
   resetStyles() {
     if (this.orpLayer) {
@@ -233,7 +233,7 @@ class MapController {
   }
   
   /**
-   * Nastav callback pro kliknutí na ORP
+   * Set callback for ORP click event
    */
   setORPClickHandler(callback) {
     this.onORPClickCallback = callback;

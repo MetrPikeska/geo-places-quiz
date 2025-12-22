@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const compression = require('compression');
 const orpRoutes = require('./routes/orp');
 
 const app = express();
@@ -9,6 +10,17 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Komprese odpovědí (GZIP)
+app.use(compression({
+  filter: (req, res) => {
+    if (req.headers['x-no-compression']) {
+      return false;
+    }
+    return compression.filter(req, res);
+  },
+  level: 6 // Kompresní úroveň (0-9)
+}));
 
 // Logging middleware
 app.use((req, res, next) => {
