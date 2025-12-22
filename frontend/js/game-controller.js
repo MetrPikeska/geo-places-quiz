@@ -94,8 +94,8 @@ class GameController {
       setTimeout(() => this.nextRound(), 1000);
       
     } else {
-      // Špatná odpověď
-      this.map.highlightWrong(clickedKod);
+      // Špatná odpověď - gradient podle vzdálenosti
+      this.map.highlightWrong(clickedKod, targetKod);
       this.map.highlightCorrect(targetKod);
       
       const wrongName = clickedFeature.properties.nazev;

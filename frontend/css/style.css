@@ -148,7 +148,7 @@ body {
 /* Feedback Message */
 .feedback {
     position: fixed;
-    bottom: 2rem;
+    bottom: 5rem;
     left: 2rem;
     padding: 1rem 1.5rem;
     background-color: white;
