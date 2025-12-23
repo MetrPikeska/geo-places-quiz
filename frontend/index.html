@@ -58,11 +58,86 @@
                 <span id="attempts">Pokusů: 0</span>
                 <span id="correct">Správně: 0</span>
             </div>
+            <button id="statsBtn" class="btn-stats">📊 Statistiky</button>
             <button id="restartBtn" class="btn-restart">🔄 Restart hry</button>
         </div>
 
         <!-- Feedback Message -->
         <div id="feedback" class="feedback hidden"></div>
+    </div>
+
+    <!-- Statistics Modal -->
+    <div id="statsModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📊 Statistiky</h2>
+                <button class="close-btn" id="closeStatsBtn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="stats-section">
+                    <h3>Celkové statistiky</h3>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <span class="stat-label">Celkem pokusů:</span>
+                            <span class="stat-value" id="statTotalAttempts">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Správných odpovědí:</span>
+                            <span class="stat-value" id="statTotalCorrect">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Úspěšnost:</span>
+                            <span class="stat-value" id="statAccuracy">0%</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Celkové skóre:</span>
+                            <span class="stat-value" id="statTotalScore">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Průměrná přesnost:</span>
+                            <span class="stat-value" id="statAvgPrecision">0.00</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Nejlepší skóre:</span>
+                            <span class="stat-value" id="statBestScore">0.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats-section">
+                    <h3>🏆 Achievementy</h3>
+                    <div class="achievements">
+                        <div class="achievement-item">
+                            <span>🎯 Perfektní hry (100%):</span>
+                            <span id="achievementPerfect">0</span>
+                        </div>
+                        <div class="achievement-item">
+                            <span>⭐ Vysoce přesné odpovědi (≥0.9):</span>
+                            <span id="achievementHighPrecision">0</span>
+                        </div>
+                        <div class="achievement-item">
+                            <span>🗺️ Zvládnuté kraje (≥90%):</span>
+                            <span id="achievementMasterRegions">Žádný</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats-section">
+                    <h3>📈 Statistiky po krajích</h3>
+                    <div id="regionStats" class="region-stats"></div>
+                </div>
+
+                <div class="stats-section">
+                    <h3>🕒 Historie her</h3>
+                    <div id="sessionHistory" class="session-history"></div>
+                </div>
+
+                <div class="modal-footer">
+                    <button id="exportStatsBtn" class="btn-secondary">💾 Export JSON</button>
+                    <button id="resetStatsBtn" class="btn-danger">🗑️ Resetovat vše</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Leaflet JS -->

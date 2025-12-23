@@ -40,8 +40,8 @@ async function initApp() {
       
       krajeData.kraje.forEach(kraj => {
         const option = document.createElement('option');
-        option.value = kraj;
-        option.textContent = kraj;
+        option.value = kraj.code; // Use code as value
+        option.textContent = kraj.name; // Display name
         krajSelect.appendChild(option);
       });
       
@@ -73,6 +73,24 @@ async function initApp() {
         }
         await gameController.setFilter('okres', selectedOkres || null);
       });
+      
+      // Set up statistics button
+      const statsBtn = document.getElementById('statsBtn');
+      statsBtn.addEventListener('click', () => {
+        gameController.showStatistics();
+      });
+
+      // Set up export and reset buttons
+      const exportStatsBtn = document.getElementById('exportStatsBtn');
+      exportStatsBtn.addEventListener('click', () => {
+        gameController.statistics.exportStats();
+      });
+
+      const resetStatsBtn = document.getElementById('resetStatsBtn');
+      resetStatsBtn.addEventListener('click', () => {
+        gameController.resetStatistics();
+      });
+      
     } catch (error) {
       console.warn('Could not load filters:', error);
     }

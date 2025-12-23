@@ -3,11 +3,32 @@
  * Manages game flow, scoring and game state
  */
 
+import StatisticsService from './statistics-service.js';
+
 class GameController {
   constructor(apiClient, mapController, uiController) {
     this.api = apiClient;
     this.map = mapController;
     this.ui = uiController;
+    this.statistics = new StatisticsService();
+    
+    // VÚSC code to name mapping (same as in backend)
+    this.vuscNames = {
+      19: 'Hlavní město Praha',
+      27: 'Středočeský kraj',
+      35: 'Jihočeský kraj',
+      43: 'Plzeňský kraj',
+      51: 'Karlovarský kraj',
+      60: 'Ústecký kraj',
+      78: 'Liberecký kraj',
+      86: 'Královéhradecký kraj',
+      94: 'Pardubický kraj',
+      108: 'Kraj Vysočina',
+      116: 'Jihomoravský kraj',
+      124: 'Olomoucký kraj',
+      132: 'Moravskoslezský kraj',
+      141: 'Zlínský kraj'
+    };
     
     this.state = {
       score: 0,
@@ -18,6 +39,9 @@ class GameController {
       filterType: null, // 'okres' or 'kraj'
       filterValue: null
     };
+    
+    // Start new session
+    this.statistics.startSession();
   }
   
   /**
@@ -120,6 +144,19 @@ class GameController {
       const { distance, coefficient } = this.map.calculatePrecisionScore(clickedKod);
       this.state.score += coefficient;
       
+      // Convert VÚSC code to kraj name
+      const krajName = this.vuscNames[this.state.currentTarget.kraj] || null;
+      
+      // Record statistics
+      this.statistics.recordAttempt(
+        true, 
+        coefficient, 
+        this.state.currentTarget.nazev,
+        krajName,
+        this.state.currentTarget.okres
+      );
+      this.statistics.updateSession(true, coefficient);
+      
       this.map.highlightCorrect(clickedKod, distance);
       
       const precisionPercent = Math.round(coefficient * 100);
@@ -131,6 +168,20 @@ class GameController {
       
     } else {
       // Wrong answer - gradient based on distance
+      
+      // Convert VÚSC code to kraj name
+      const krajName = this.vuscNames[this.state.currentTarget.kraj] || null;
+      
+      // Record statistics
+      this.statistics.recordAttempt(
+        false, 
+        0, 
+        this.state.currentTarget.nazev,
+        krajName,
+        this.state.currentTarget.okres
+      );
+      this.statistics.updateSession(false, 0);
+      
       this.map.highlightWrong(clickedKod, targetKod);
       this.map.highlightCorrect(targetKod);
       
@@ -150,9 +201,44 @@ class GameController {
   }
   
   /**
+   * Reload map with current filter
+   */
+  async reloadMap() {
+    try {
+      this.ui.showLoading('Loading filtered data...');
+      
+      let geojson;
+      
+      if (this.state.filterType === 'kraj' && this.state.filterValue) {
+        // Load ORP filtered by kraj
+        geojson = await this.api.getORPByKraj(this.state.filterValue);
+      } else if (this.state.filterType === 'okres' && this.state.filterValue) {
+        // Load ORP filtered by okres
+        geojson = await this.api.getORPByRegion(this.state.filterValue);
+      } else {
+        // Load all ORP
+        geojson = await this.api.getAllORP();
+      }
+      
+      // Re-render map with filtered data
+      this.map.renderORP(geojson);
+      
+      console.log(`✅ Map reloaded with filter: ${this.state.filterType}=${this.state.filterValue}`);
+    } catch (error) {
+      console.error('Error reloading map:', error);
+      this.ui.showError('Failed to load filtered data.');
+    }
+  }
+  
+  /**
    * Restart game
    */
-  restart() {
+  async restart() {
+    // End current session
+    if (this.state.attempts > 0) {
+      this.statistics.endSession();
+    }
+    
     this.state = {
       score: 0,
       attempts: 0,
@@ -163,11 +249,49 @@ class GameController {
       filterValue: this.state.filterValue
     };
     
+    // Start new session
+    this.statistics.startSession(this.state.filterType, this.state.filterValue);
+    
     this.ui.updateScore(this.state);
     this.map.resetStyles();
-    this.nextRound();
+    await this.nextRound();
     
     console.log('🔄 Game restarted');
+  }
+  
+  /**
+   * Set filter
+   */
+  async setFilter(type, value) {
+    // End current session
+    if (this.state.attempts > 0) {
+      this.statistics.endSession();
+    }
+    
+    this.state.filterType = type;
+    this.state.filterValue = value;
+    
+    // Reload map with filtered data
+    await this.reloadMap();
+    
+    // Restart with new filter
+    await this.restart();
+  }
+  
+  /**
+   * Show statistics modal
+   */
+  showStatistics() {
+    this.ui.showStatistics(this.statistics);
+  }
+  
+  /**
+   * Reset all statistics
+   */
+  resetStatistics() {
+    if (this.statistics.resetStats()) {
+      this.ui.updateStatisticsDisplay(this.statistics);
+    }
   }
 }
 

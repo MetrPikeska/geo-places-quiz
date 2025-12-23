@@ -6,6 +6,24 @@ class ORPService {
     this.orpCache = null;
     this.cacheTimestamp = null;
     this.CACHE_DURATION = 1000 * 60 * 60; // 1 hour
+    
+    // VÚSC code to name mapping
+    this.vuscNames = {
+      19: 'Hlavní město Praha',
+      27: 'Středočeský kraj',
+      35: 'Jihočeský kraj',
+      43: 'Plzeňský kraj',
+      51: 'Karlovarský kraj',
+      60: 'Ústecký kraj',
+      78: 'Liberecký kraj',
+      86: 'Královéhradecký kraj',
+      94: 'Pardubický kraj',
+      108: 'Kraj Vysočina',
+      116: 'Jihomoravský kraj',
+      124: 'Olomoucký kraj',
+      132: 'Moravskoslezský kraj',
+      141: 'Zlínský kraj'
+    };
   }
   
   /**
@@ -193,11 +211,11 @@ class ORPService {
   }
   
   /**
-   * Get list of all unique kraje (regions)
+   * Get list of all unique kraje (regions) with names
    */
   async getKraje() {
     const query = `
-      SELECT DISTINCT vusc as kraj
+      SELECT DISTINCT vusc
       FROM "Orp_SLDB"
       WHERE vusc IS NOT NULL
       ORDER BY vusc;
@@ -205,7 +223,11 @@ class ORPService {
     
     try {
       const result = await pool.query(query);
-      return result.rows.map(row => row.kraj);
+      // Return array of objects with code and name
+      return result.rows.map(row => ({
+        code: row.vusc,
+        name: this.vuscNames[row.vusc] || `VÚSC ${row.vusc}`
+      }));
     } catch (error) {
       console.error('Error loading kraje:', error);
       throw error;
@@ -248,12 +270,12 @@ class ORPService {
       throw error;
     }
   }
-  
+
   /**
    * Load ORP filtered by kraj (region)
-   * @param {string} kraj - Name of the kraj to filter by
+   * @param {number} krajCode - VÚSC code of the kraj
    */
-  async getORPByKraj(kraj) {
+  async getORPByKraj(krajCode) {
     const query = `
       SELECT jsonb_build_object(
         'type', 'FeatureCollection',
@@ -278,7 +300,7 @@ class ORPService {
     `;
     
     try {
-      const result = await pool.query(query, [kraj]);
+      const result = await pool.query(query, [parseInt(krajCode)]);
       return result.rows[0].geojson;
     } catch (error) {
       console.error('Error loading ORP by kraj:', error);
@@ -289,7 +311,7 @@ class ORPService {
   /**
    * Get random ORP from specific region
    * @param {string} okres - Name of the okres (optional)
-   * @param {string} kraj - Name of the kraj (optional)
+   * @param {number} kraj - VÚSC code of the kraj (optional)
    */
   async getRandomORPFromRegion(okres = null, kraj = null) {
     let query;
@@ -326,7 +348,7 @@ class ORPService {
         ORDER BY RANDOM()
         LIMIT 1;
       `;
-      params = [kraj];
+      params = [parseInt(kraj)];
     } else {
       query = `
         SELECT 

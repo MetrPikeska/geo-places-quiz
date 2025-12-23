@@ -140,13 +140,13 @@ router.get('/region/:okres', async (req, res) => {
 });
 
 /**
- * GET /api/orp/kraj/:kraj
- * Returns ORP filtered by kraj
+ * GET /api/orp/kraj/:krajCode
+ * Returns ORP filtered by kraj code
  */
-router.get('/kraj/:kraj', async (req, res) => {
+router.get('/kraj/:krajCode', async (req, res) => {
   try {
-    const kraj = decodeURIComponent(req.params.kraj);
-    const geojson = await orpService.getORPByKraj(kraj);
+    const krajCode = parseInt(req.params.krajCode);
+    const geojson = await orpService.getORPByKraj(krajCode);
     res.json(geojson);
   } catch (error) {
     console.error('Error loading ORP by kraj:', error);

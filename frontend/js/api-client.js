@@ -99,11 +99,11 @@ class APIClient {
   
   /**
    * Load ORP filtered by kraj
-   * @param {string} kraj - Kraj name
+   * @param {number|string} krajCode - Kraj VÚSC code or name
    */
-  async getORPByKraj(kraj) {
+  async getORPByKraj(krajCode) {
     try {
-      const response = await fetch(`${this.baseURL}/orp/kraj/${encodeURIComponent(kraj)}`);
+      const response = await fetch(`${this.baseURL}/orp/kraj/${krajCode}`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
